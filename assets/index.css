@@ -1,0 +1,46 @@
+.container {
+  width: 1280px;
+  height: 100%;
+  border: 1px solid;
+  margin: auto;
+  color: brown;
+}
+
+.column-board {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  
+}
+
+@keyframes rotate180 {
+  0% {transform: rotate(0deg);}
+  100%{transform: rotate(180deg);}
+}
+
+@keyframes rotate0 {
+  0% {transform: rotate(180deg);}
+  100%{transform: rotate(0deg);}
+}
+
+.row-board {
+  aspect-ratio: 1/1;
+  width: 12.5%;
+  height: auto;
+  display: flex;
+  justify-content: "center";
+  align-item: "center";
+}
+
+.animate-player-1 {
+  animation: rotate0 2s 1;
+}
+
+.animate-player-2 {
+  animation: rotate180 2s 1;
+}
+
+.creature {
+  text-align: "center";
+  margin: auto;
+}
