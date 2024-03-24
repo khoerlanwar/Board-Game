@@ -3,43 +3,87 @@ const playerGame = [
   {
     id: 1,
     color: "white",
-    chess: {
-      pawn: ["G71", "G72", "G73", "G74", "G75", "G76", "G77", "G78"],
-      knight: ["H82", "H87"],
-      bishop: ["H83", "H86"],
-      rook: ["H81", "H88"],
-      queen: ["H85"],
-      king: ["H84"]
+    creatures: {
+      pawn: [
+        { code: 'P1-PAWN-1', board: "G71" },
+        { code: 'P1-PAWN-2', board: "G72" },
+        { code: 'P1-PAWN-3', board: "G73" },
+        { code: 'P1-PAWN-4', board: "G74" },
+        { code: 'P1-PAWN-5', board: "G75" },
+        { code: 'P1-PAWN-6', board: "G76" },
+        { code: 'P1-PAWN-7', board: "G77" },
+        { code: 'P1-PAWN-8', board: "G78" }
+      ],
+      knight: [
+        { code: 'P1-KNIGHT-1', board: 'H82' },
+        { code: 'P1-KNIGHT-2', board: 'H87' }
+      ],
+      bishop: [
+        { code: 'P1-BISHOP-1', board: 'H83' },
+        { code: 'P1-BISHOP-2', board: 'H86' }
+      ],
+      rook: [
+        { code: 'P1-ROOK-1', board: 'H81' },
+        { code: 'P1-ROOK-2', board: 'H88' }
+      ],
+      queen: [
+        { code: 'P1-QUEEN-1', board: 'H85' }
+      ],
+      king: [
+        { code: 'P1-KING-1', board: 'H84' }
+      ]
     },
-    turn: 1,
+    turn: 0,
     lastMove: null,
     move: true
   },
   {
     id: 2,
     color: "black",
-    chess: {
-      pawn: ["B21", "B22", "B23", "B24", "B25", "B26", "B27", "B28"],
-      knight: ["A12", "A17"],
-      bishop: ["A13", "A16"],
-      rook: ["A11", "A18"],
-      queen: ["A14"],
-      king: ["A15"]
+    creatures: {
+      pawn: [
+        { code: 'P2-PAWN-1', board: "B21" },
+        { code: 'P2-PAWN-2', board: "B22" },
+        { code: 'P2-PAWN-3', board: "B23" },
+        { code: 'P2-PAWN-4', board: "B24" },
+        { code: 'P2-PAWN-5', board: "B25" },
+        { code: 'P2-PAWN-6', board: "B26" },
+        { code: 'P2-PAWN-7', board: "B27" },
+        { code: 'P2-PAWN-8', board: "B28" }
+      ],
+      knight: [
+        { code: 'P2-KNIGHT-1', board: 'A12' },
+        { code: 'P2-KNIGHT-2', board: 'A17' }
+      ],
+      bishop: [
+        { code: 'P2-BISHOP-1', board: 'A13' },
+        { code: 'P2-BISHOP-2', board: 'A16' }
+      ],
+      rook: [
+        { code: 'P2-ROOK-1', board: 'A11' },
+        { code: 'P2-ROOK-2', board: 'A18' }
+      ],
+      queen: [
+        { code: 'P2-QUEEN-1', board: 'A14' }
+      ],
+      king: [
+        { code: 'P2-KING-1', board: 'A15' }
+      ]
     },
-    turn: 1,
+    turn: 0,
     lastMove: null,
     move: false
   }
 ]
 
-const chess = {
+const gameCreature = {
   pawn: {
     name: "Pawn",
     image: "",
     total: 8,
     rule: {
       y: {
-        move: [2, 0],
+        move: [1, 0],
       },
       xY: {
         kill: [1, 1]
@@ -122,17 +166,18 @@ const chess = {
     skip: false
   }
 }
+let movePaterns = []
 
 function initGameChess() {
   const isGameStart = JSON.parse(localStorage.getItem('game'))
 
   if (isGameStart) {
     const playerTurn = isGameStart.match.find(obj => obj.move)
-    changePlayerTurn(playerTurn.id)
+    // changePlayerTurn(playerTurn.id)
   }
 
   boardGame()
-  chessPosition()
+  creaturePositions()
 }
 
 function boardGame() {
@@ -190,7 +235,7 @@ function boardColor() {
   }
 }
 
-function chessPosition() {
+function creaturePositions() {
   const isGameStart = JSON.parse(localStorage.getItem('game'))
   let initCreaturePosition = playerGame
 
@@ -205,25 +250,24 @@ function chessPosition() {
   }
 
   initCreaturePosition.map((player) => {
-    Object.entries(player.chess).map(obj => {
+    Object.entries(player.creatures).map(obj => {
       const creature = obj[0]
       const creaturePosition = obj[1]
 
       creaturePosition.map(pos => {
-        const creatureTitle = Object.entries(chess).find(obj => obj[0] === creature)[1].name
-
-        const board = document.querySelector('#' + pos)
+        const board = document.querySelector('#' + pos.board)
         const createCreature = document.createElement('div')
-        const creatureId = creature + "_" + pos
+        const creatureId = creature + "_" + pos.board
 
         createCreature.classList.add('creature')
-        createCreature.innerHTML = creatureTitle + ' Player ' + player.id
-        createCreature.setAttribute('data-id', player.id)
+        createCreature.innerHTML = pos.code
+        createCreature.setAttribute('data-id', pos.code)
         createCreature.setAttribute('id', creatureId)
 
         if (playerTurn === 2) createCreature.style.transform = 'rotate(180deg)'
 
-        if (player.move) board.addEventListener('click', () => selectCreature(creatureId, creature));
+        // if (player.move) board.addEventListener('click', () => selectCreature(creatureId, creature));
+        if (player.move) board.setAttribute('onclick', `selectCreature("${creatureId}", "${creature}")`)
         board.appendChild(createCreature)
       })
     })
@@ -236,30 +280,29 @@ function chessPosition() {
 }
 
 function selectCreature(id, creature) {
-  console.log(id, creature)
   const findCreature = document.querySelector('#' + id)
   const currentPosition = findCreature.parentElement
-  const isCreature = chess[creature] ?? null
+  const isCreature = gameCreature[creature] ?? null
   const positionId = currentPosition.getAttribute('id')
   const playerIdentity = findCreature.getAttribute('data-id')
-
-  // if (chess) console.log(chess)
   movingPatern(positionId, isCreature, playerIdentity)
 }
 
-function moveCreature(from, to, creature, player) {
+function moveCreatures(from, to, creature, creatureId) {
   const gamePlaying = JSON.parse(localStorage.getItem('game'))
+  const gameHistory = JSON.parse(localStorage.getItem('historyMove')) ?? []
 
   const board = document.querySelector('#' + to)
+
   const moveCreature = document.createElement('div')
-  const moveId = creature.name.toLowerCase() + "_" + to
-  const removeId = creature.name.toLowerCase() + "_" + from
+  const moveId = creature + "_" + to
+  const removeId = creature + "_" + from
 
   const removeCreature = document.querySelector('#' + removeId)
 
   moveCreature.classList.add('creature')
-  moveCreature.innerHTML = creature.name + ' Player ' + player
-  moveCreature.setAttribute('data-id', player)
+  moveCreature.innerHTML = creatureId
+  moveCreature.setAttribute('data-id', creatureId)
   moveCreature.setAttribute('id', moveId)
 
   board.appendChild(moveCreature)
@@ -268,24 +311,29 @@ function moveCreature(from, to, creature, player) {
   const finishMove = gamePlaying.match.map(obj => {
     let newObject = { ...obj }
 
-    if (newObject.id === Number(player)) {
-      Object.entries(newObject.chess).map(value => {
-        if (value[0] === creature.name.toLowerCase()) {
-          const removePreviousPosition = value[1].filter(object => object !== from)
-          const newCreaturePosition = [...removePreviousPosition, to]
+    if (creatureId.includes(`P${newObject.id}`)) {
+      Object.entries(newObject.creatures).map(value => {
+        if (value[0] === creature) {
+          const findCreature = value[1].find(object => object.board === from)
 
-          newObject.chess[value[0]] = newCreaturePosition
+          const removePreviousPosition = value[1].filter(object => object.board !== from)
+          const newCreaturePosition = [...removePreviousPosition, {
+            ...findCreature,
+            board: to
+          }]
+
+          newObject.creatures[value[0]] = newCreaturePosition
+          newObject.lastMove = {
+            creatures: findCreature.code,
+            from: from,
+            to: to
+          }
         }
       })
 
       newObject = {
         ...newObject,
         turn: newObject.turn + 1,
-        lastMove: {
-          chess: creature.name.toLowerCase(),
-          from: from,
-          to: to
-        },
         move: false
       }
     } else newObject.move = true
@@ -295,28 +343,31 @@ function moveCreature(from, to, creature, player) {
 
   const nextTurn = finishMove.find(obj => obj.move).id
 
-  if (player === 2) createCreature.style.transform = 'rotate(180deg)'
+  if (creatureId.includes('P2')) moveCreature.style.transform = 'rotate(180deg)'
 
   localStorage.setItem('game', JSON.stringify({
     ...gamePlaying,
     match: finishMove
   }))
+  console.log(gameHistory)
+  // localStorage.setItem('historyMove', JSON.stringify({
+  //   creature: [...gameHistory, finishMove.lastMove]
+  // }))
 
 
-  chessPosition()
+  createMovePatern('select', { from: from, creature: creature, creatureId: creatureId })
   boardColor()
-  changePlayerTurn(nextTurn)
+  creaturePositions()
+  // changePlayerTurn(nextTurn)
 }
 
 function paternIdentity({ board, row, column }) {
   return board + row + column
 }
 
-function movingPatern(position, creature, player) {
+function movingPatern(position, creature, creatureId) {
   boardColor()
-
-  let movePaterns = []
-
+  movePaterns = []
   const splitPosition = position.split("")
   const rowIndex = boardId.findIndex(obj => splitPosition[0] === obj)
 
@@ -337,11 +388,12 @@ function movingPatern(position, creature, player) {
         const currentColumn = Number(splitPosition[2])
 
         for (let i = 1; i <= obj; i++) {
-          let movingCreature = player === "1" ? Number(-i) : Number(i)
+          let movingCreature = creatureId.includes('P1') ? Number(-i) : Number(i)
 
           if (creatureRule === "y") {
-            if (index === 1) movingCreature = player === "1" ? i : -i
+            if (index === 1) movingCreature = creatureId.includes('P1') ? i : -i
             const moveBoardIndex = boardIndex + movingCreature
+
 
             const moveBoard = boardId[moveBoardIndex]
             const moveRow = currentRow + movingCreature
@@ -388,13 +440,13 @@ function movingPatern(position, creature, player) {
           const checkBoard = document.querySelector('#' + isActionPatern)
           const isEmptyBoard = checkBoard?.children?.length
 
-          // if (creature.skip) knightSkipMove.push(isActionPatern)
           // Move Condition
           if (isEmptyBoard > 0) {
-            const isEnemy = checkBoard.children[0].getAttribute('data-id')
+            const isEnemy = checkBoard.children[0].getAttribute('data-id').includes('P1')
+            const isPlayer = creatureId.includes('P1')
 
             if (creatureAction === "move" && isEnemy) return
-            else if (creatureAction.toLowerCase().includes('kill') && player === isEnemy) return
+            else if (creatureAction.toLowerCase().includes('kill') && isPlayer === isEnemy) return
           } else {
             if (creatureAction === "kill") return
           }
@@ -405,19 +457,46 @@ function movingPatern(position, creature, player) {
     })
   })
 
+  createMovePatern('move', { from: position, creature: creature.name.toLowerCase(), creatureId: creatureId })
+}
+
+function createMovePatern(action, attribute) {
+  const { from, creature, creatureId } = attribute
+  if (movePaterns.length <= 0) return
+
+  console.log(attribute)
+
   movePaterns.map(obj => {
     const board = document.querySelector('#' + obj)
-
-    // board.addEventListener('click', () => moveCreature(position, obj, creature, player), false)
-
     if (board) board.style.background = 'blue'
   })
+
+  const boardList = document.querySelectorAll('.row-board')
+
+  for (let index = 0; index < boardList.length; index++) {
+    const element = boardList[index];
+    const boardId = element.getAttribute('id')
+
+    if (element.children[0]) {
+      const playerCreature = element.children[0].getAttribute('data-id')
+      const playerTurn = creatureId.split('-')[0]
+
+      if (playerCreature.includes(playerTurn)) {
+        if (movePaterns.includes(boardId)) element.setAttribute('onclick', `moveCreatures('${from}', '${boardId}', '${creature}', '${creatureId}')`)
+        else element.setAttribute('onclick', `selectCreature("${creatureId}", "${creature}")`)
+
+      } else element.removeAttribute('onclick')
+    }
+
+    console.log(element)
+  }
+  if (action !== 'move') movePaterns = []
 }
 
 function changePlayerTurn(player) {
   const container = document.querySelector('.container')
 
-  if (player === 1) {
+  if (Number(player) === 1) {
     container.classList.add('animate-player-1')
 
     setTimeout(() => {
@@ -426,7 +505,7 @@ function changePlayerTurn(player) {
     }, 2000)
   }
 
-  if (player === 2) {
+  if (Number(player) === 2) {
     container.classList.add('animate-player-2')
 
     setTimeout(() => {
